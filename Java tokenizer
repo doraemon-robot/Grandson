@@ -1,0 +1,126 @@
+%{
+#include <stdio.h>
+#include <string.h>
+
+int line_count = 1;
+
+void identify_statement(char* statement_type, char* line_text) {
+    printf("Line %d: %s -> %s\n", line_count, statement_type, line_text);
+    line_count++;
+}
+%}
+
+/* Pattern definitions */
+letter          [a-zA-Z]
+digit           [0-9]
+underscore      [_]
+identifier      ({letter}|{underscore})({letter}|{digit}|{underscore})*
+whitespace      [ \t]
+number          {digit}+
+datatype        (int|float|double|char|String)
+
+%option noyywrap
+
+%%
+
+^{whitespace}*int{whitespace}+{identifier}{whitespace}*=.*; { 
+    identify_statement("INT DECLARATION WITH ASSIGNMENT", yytext); 
+}
+
+^{whitespace}*float{whitespace}+{identifier}{whitespace}*=.*; { 
+    identify_statement("FLOAT DECLARATION WITH ASSIGNMENT", yytext); 
+}
+
+^{whitespace}*double{whitespace}+{identifier}{whitespace}*=.*; { 
+    identify_statement("DOUBLE DECLARATION WITH ASSIGNMENT", yytext); 
+}
+
+^{whitespace}*char{whitespace}+{identifier}{whitespace}*=.*; { 
+    identify_statement("CHAR DECLARATION WITH ASSIGNMENT", yytext); 
+}
+
+^{whitespace}*String{whitespace}+{identifier}{whitespace}*=.*; { 
+    identify_statement("STRING DECLARATION WITH ASSIGNMENT", yytext); 
+}
+
+^{whitespace}*{datatype}{whitespace}+{identifier}{whitespace}*; { 
+    identify_statement("VARIABLE DECLARATION", yytext); 
+}
+
+^{whitespace}*{identifier}{whitespace}*={whitespace}*[^;]+; { 
+    identify_statement("ASSIGNMENT STATEMENT", yytext); 
+}
+
+^{whitespace}*{identifier}{whitespace}*(\+\+|--); { 
+    identify_statement("INCREMENT/DECREMENT STATEMENT", yytext); 
+}
+
+^{whitespace}*{identifier}{whitespace}*(\+=|-=|\*=|\/=).*; { 
+    identify_statement("COMPOUND ASSIGNMENT STATEMENT", yytext); 
+}
+
+^{whitespace}*while{whitespace}*\(.*\){whitespace}*\{ { 
+    identify_statement("WHILE LOOP START", yytext); 
+}
+
+^{whitespace}*if{whitespace}*\(.*\){whitespace}*\{ { 
+    identify_statement("IF STATEMENT START", yytext); 
+}
+
+^{whitespace}*else{whitespace}+if{whitespace}*\(.*\){whitespace}*\{ { 
+    identify_statement("ELSE IF STATEMENT START", yytext); 
+}
+
+^{whitespace}*else{whitespace}*\{ { 
+    identify_statement("ELSE STATEMENT START", yytext); 
+}
+
+^{whitespace}*for{whitespace}*\(.*\){whitespace}*\{ { 
+    identify_statement("FOR LOOP START", yytext); 
+}
+
+^{whitespace}*\} { 
+    identify_statement("BLOCK END", yytext); 
+}
+
+^{whitespace}*System\.out\.println.*; { 
+    identify_statement("PRINT STATEMENT", yytext); 
+}
+
+^{whitespace}*return.*; { 
+    identify_statement("RETURN STATEMENT", yytext); 
+}
+
+^{whitespace}*break{whitespace}*; { 
+    identify_statement("BREAK STATEMENT", yytext); 
+}
+
+^{whitespace}*continue{whitespace}*; { 
+    identify_statement("CONTINUE STATEMENT", yytext); 
+}
+
+^{whitespace}*\/\/.*$ { 
+    identify_statement("SINGLE LINE COMMENT", yytext); 
+}
+
+^{whitespace}*$ { 
+    line_count++; /* skip empty lines */ 
+}
+
+^.*$ { 
+    identify_statement("OTHER STATEMENT", yytext); 
+}
+
+%%
+
+int main() {
+    printf("Java Statement Type Analyzer\n");
+    printf("Enter your Java code (press Ctrl+D when done):\n");
+    printf("==========================================\n");
+    
+    yylex();
+    
+    printf("==========================================\n");
+    printf("Analysis complete! Processed %d lines.\n", line_count - 1);
+    return 0;
+}
