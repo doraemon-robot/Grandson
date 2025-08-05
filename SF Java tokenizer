@@ -1,0 +1,74 @@
+%{
+#include <stdio.h>
+
+// Simple counters to keep track of stuff
+int line_count = 1;
+
+// Function to print what we found
+void print_what_we_found(char* token_type, char* text) {
+    printf("Found %s: %s (line %d)\n", token_type, text, line_count);
+}
+%}
+
+// Some basic patterns
+letter      [a-zA-Z]
+digit       [0-9]
+word        {letter}({letter}|{digit})*
+number      {digit}+
+spaces      [ \t]+
+
+%%
+
+\n                  { line_count++; }
+{spaces}            { /* ignore spaces */ }
+
+"while"             { print_what_we_found("WHILE LOOP", yytext); }
+"if"                { print_what_we_found("IF STATEMENT", yytext); }
+"else"              { print_what_we_found("ELSE STATEMENT", yytext); }
+
+"int"               { print_what_we_found("DECLARATION", yytext); }
+"float"             { print_what_we_found("DECLARATION", yytext); }
+"double"            { print_what_we_found("DECLARATION", yytext); }
+"char"              { print_what_we_found("DECLARATION", yytext); }
+"String"            { print_what_we_found("DECLARATION", yytext); }
+
+"="                 { print_what_we_found("ASSIGNMENT", yytext); }
+"+="                { print_what_we_found("ASSIGNMENT", yytext); }
+"-="                { print_what_we_found("ASSIGNMENT", yytext); }
+
+"=="                { print_what_we_found("CONDITION", yytext); }
+"!="                { print_what_we_found("CONDITION", yytext); }
+"<"                 { print_what_we_found("CONDITION", yytext); }
+">"                 { print_what_we_found("CONDITION", yytext); }
+"<="                { print_what_we_found("CONDITION", yytext); }
+">="                { print_what_we_found("CONDITION", yytext); }
+
+"+"                 { print_what_we_found("OPERATOR", yytext); }
+"-"                 { print_what_we_found("OPERATOR", yytext); }
+"*"                 { print_what_we_found("OPERATOR", yytext); }
+"/"                 { print_what_we_found("OPERATOR", yytext); }
+
+{word}              { print_what_we_found("VARIABLE NAME", yytext); }
+{number}            { print_what_we_found("NUMBER", yytext); }
+
+"("                 { print_what_we_found("OPEN BRACKET", yytext); }
+")"                 { print_what_we_found("CLOSE BRACKET", yytext); }
+"{"                 { print_what_we_found("OPEN BRACE", yytext); }
+"}"                 { print_what_we_found("CLOSE BRACE", yytext); }
+";"                 { print_what_we_found("SEMICOLON", yytext); }
+
+.                   { /* ignore other characters */ }
+
+%%
+
+int main() {
+    printf("Java Code Tokenizer\n");
+    printf("Type your Java code (press Ctrl+D when done):\n");
+    printf("=====================================\n");
+    
+    yylex(); // This does the actual tokenizing
+    
+    printf("=====================================\n");
+    printf("Done! Processed %d lines.\n", line_count - 1);
+    return 0;
+}
